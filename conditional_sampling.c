@@ -61,11 +61,11 @@ void show_state(int nsite) {
 
 int main() {
 
-    int t=10;
-    int nsite = 2048;
+    int nsite = 32;
+    int t=40;
     double beta = 0.5;
     int nsample = 10000;
-    unsigned long int seed = 3409384793274;
+    unsigned long int seed = 9384793274;
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
