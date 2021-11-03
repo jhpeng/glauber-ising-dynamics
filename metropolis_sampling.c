@@ -65,7 +65,6 @@ void bond2index(int L, int T) {
     Nbond = ib;
     Nsite = L*T;
 
-    printf("debug\n");
 }
 
 int* Index2bond;
@@ -91,7 +90,6 @@ void index2bond(int L, int T) {
         Index2bond[i2*4+2] = ib;
         Index2bond[i3*4+3] = ib;
     }
-    printf("debug\n");
 }
 
 void localupdate(int L, int T) {
@@ -153,11 +151,12 @@ void show_state(int L, int T) {
 }
 
 int main() {
-    int L = 32;
-    int T = 41;
+    int L = 2048;
+    int T = 11;
     double beta=0.5;
-    int nsample = 100000;
-    unsigned long int seed = 394934393454;
+    int nsample = 1000000;
+    int nther = 1000000;
+    unsigned long int seed = 34093454;
 
     rng = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(rng,seed);
@@ -178,15 +177,35 @@ int main() {
     Sigma = (int*)malloc(sizeof(int)*Nsite);
     initial_state(L,T,1);
 
-    printf("===================== initial state =====================\n");
-    show_state(L,T);
-
-    for(i=0;i<nsample;i++) {
+    printf("staringt the thermalization...\n");
+    for(i=0;i<nther;i++) {
         for(int j=0;j<Nsite;j++)
             localupdate(L,T);
     }
-    printf("======================= last state ======================\n");
-    show_state(L,T);
+
+    printf("staringt the measurement...\n");
+    double* magz = (double*)malloc(sizeof(double)*T);
+    for(i=0;i<T;i++) magz[i]=0;
+
+    for(i=0;i<nsample;i++) {
+        for(int j=0;j<10*Nsite;j++)
+            localupdate(L,T);
+
+        for(int t=0;t<T;t++) {
+            for(int x=0;x<L;x++) {
+                magz[t]+=Sigma[x+L*t];
+            }
+        }
+    }
+
+    for(int t=0;t<T;t++) {
+        magz[t] = magz[t]/nsample/L;
+        magz[t] = magz[t]*2-1;
+
+        printf("t=%d %.10e\n",t,magz[t]);
+    }
+    //printf("======================= last state ======================\n");
+    //show_state(L,T);
 
     return 0;
 }

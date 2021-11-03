@@ -59,13 +59,13 @@ void show_state(int nsite) {
     printf("\n");
 }
 
-int main() {
+int main(int argc, char** argv) {
 
-    int nsite = 32;
-    int t=40;
-    double beta = 0.5;
-    int nsample = 10000;
-    unsigned long int seed = 9384793274;
+    int nsite = atoi(argv[1]);
+    int t = atoi(argv[2]);
+    double beta = atof(argv[3]);
+    int nsample = atoi(argv[4]);
+    unsigned long int seed = atoi(argv[5]);
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
