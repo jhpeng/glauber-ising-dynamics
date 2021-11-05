@@ -67,6 +67,17 @@ void initial_state(int L, int T, int type) {
                 Sigma[i]=0;
             }
         }
+    } else if(type==2) {
+        for(int i=0;i<L;i++) {
+            Sigma[i]=1;
+            if(i%4==0) Sigma[i]=0;
+        }
+        for(int i=L;i<L*T;i++) {
+            Sigma[i]=1;
+            if(gsl_rng_uniform_pos(rng)<0.5){
+                Sigma[i]=0;
+            }
+        }
     }
 }
 
@@ -120,9 +131,11 @@ void bond2index(int L, int T) {
     Nsite = L*T;
 }
 
+double WeightOfConf;
 void clustering() {
     int s[4];
     int index[4];
+    WeightOfConf=0;
     for(int ib=0;ib<Nbond;ib++) {
         index[0] = Bond2index[4*ib+0];
         index[1] = Bond2index[4*ib+1];
@@ -139,6 +152,8 @@ void clustering() {
            merge(Ptree,Weight,index[0],index[2]); 
            merge(Ptree,Weight,index[0],index[3]); 
         }
+
+        WeightOfConf += log(LocalWeight[bits2int(s)]);
     }
 }
 
@@ -152,9 +167,37 @@ void flip() {
     for(int i=0;i<Nsite;i++) {
         r = root(Ptree,i);
         if(Weight[r]>0){
-            if(Flist[r]) Sigma[i] = (Sigma[i])^1;
+            Sigma[i] = (Sigma[i])^Flist[r];
         }
     }
+}
+
+int* Clusters;
+void analysis_cluster() {
+    if(Clusters==NULL) {
+        Clusters = (int*)malloc(sizeof(int)*Nsite);
+    }
+
+    int r;
+    int ncluster=0;
+    int msize=0;
+    for(int i=0;i<Nsite;i++) Clusters[i] = 0;
+    for(int i=0;i<Nsite;i++) {
+        r = root(Ptree,i);
+        if(!Clusters[r]) {
+            Clusters[r] = 1;
+            ncluster++;
+        } else {
+            Clusters[r]++;
+
+            if(Clusters[r]>msize) msize = Clusters[r];
+        }
+    }
+
+    printf("--------------------------\n");
+    printf("Nsite    = %d\n",Nsite);
+    printf("ncluster = %d\n",ncluster);
+    printf("msize    = %d\n",msize);
 }
 
 void show_state(int L, int T) {
@@ -167,17 +210,17 @@ void show_state(int L, int T) {
 }
 
 int main() {
-    int L=32;
+    int L=8;
     int T=20;
-    double beta=0.5;
-    unsigned long int seed = 94732974;
-    int nther = 100000;
-    int nsample=100000;
+    double beta=0.25;
+    unsigned long int seed = 450842974;
+    int nther = 1000000;
+    int nsample=10000000;
     
     T+=1;
 
     Nsite = T*L;
-    Nbond = (T-1)*L*3;
+    Nbond = (T-1)*L;
 
     Sigma = (int*)malloc(sizeof(int)*Nsite);
     Bond2index = (int*)malloc(sizeof(int)*Nbond*2);
@@ -189,7 +232,7 @@ int main() {
     gsl_rng_set(rng,seed);
 
     bond2index(L,T);
-    initial_state(L,T,1);
+    initial_state(L,T,2);
 
     int b[4];
     double w;
@@ -209,14 +252,16 @@ int main() {
         boundary_condition(L,T,0);
         clustering();
         flip();
+        analysis_cluster();
     }
 
-    printf("staringt the measurement...\n");
+    printf("staring the measurement...\n");
+    double weight_conf=0;
     double* magz = (double*)malloc(sizeof(double)*T);
     for(int i=0;i<T;i++) magz[i]=0;
 
     for(int i=0;i<nsample;i++) {
-        for(int j=0;j<4*Nsite;j++){
+        for(int j=0;j<10;j++){
             initial_tree();
             boundary_condition(L,T,0);
             clustering();
@@ -228,6 +273,7 @@ int main() {
                 magz[t]+=Sigma[x+L*t];
             }
         }
+        weight_conf += WeightOfConf;
     }
 
     for(int t=0;t<T;t++) {
@@ -236,9 +282,11 @@ int main() {
 
         printf("t=%d %.10e\n",t,magz[t]);
     }
+    weight_conf = weight_conf/nsample;
+    printf("log weight of configuration (ave) = %.10e\n",weight_conf);
 
     //for(int i=0;i<Nsite;i++) printf("%d %d\n",Ptree[i],Weight[i]);
-    show_state(L,T);
+    //show_state(L,T);
 
     return 0;
 }

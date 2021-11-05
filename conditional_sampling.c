@@ -9,7 +9,6 @@ int* sigma_temp;
 double* local_prob;
 gsl_rng* rng;
 
-double* magz;
 
 void set_local_prob(double beta){
     if(local_prob==NULL) {
@@ -36,15 +35,26 @@ void initial_state(int type, int nsite) {
         for(int i=0;i<nsite;i++) {
             sigma[i] = 1;
         }
+    } else if(type==2) {
+        for(int i=0;i<nsite;i++) {
+            sigma[i] = 1;
+            if(i%4==0) sigma[i] = 0;
+        }
     }
 }
 
+double WeightOfConf;
 void update(int nsite) {
     int s;
     for(int i=0;i<nsite;i++) {
         s = sigma[i]+sigma[(i+1)%nsite]+sigma[(i-1+nsite)%nsite];
-        if(gsl_rng_uniform_pos(rng)<local_prob[s]) sigma_temp[i]=1;
-        else sigma_temp[i]=0;
+        if(gsl_rng_uniform_pos(rng)<local_prob[s]) {
+            sigma_temp[i]=1;
+            WeightOfConf += log(local_prob[s]);
+        } else { 
+            sigma_temp[i]=0;
+            WeightOfConf += log(1-local_prob[s]);
+        }
     }
 
     int* p = sigma;
@@ -75,11 +85,13 @@ int main(int argc, char** argv) {
 
     set_local_prob(beta);
 
-    magz = (double*)malloc(sizeof(double)*t);
+    double weight_conf=0;
+    double* magz = (double*)malloc(sizeof(double)*t);
     for(int i=0;i<t;i++) magz[i]=0;
 
     for(int j=0;j<nsample;j++) {
-        initial_state(1,nsite);
+        WeightOfConf = 0;
+        initial_state(2,nsite);
         for(int i=0;i<t;i++) {
             //show_state(nsite);
             update(nsite);
@@ -87,6 +99,7 @@ int main(int argc, char** argv) {
                 magz[i]+=sigma[i_site];
             }
         }
+        weight_conf += WeightOfConf;
     }
 
     for(int i=0;i<t;i++) {
@@ -95,6 +108,8 @@ int main(int argc, char** argv) {
 
         printf("t=%d %.10e\n",i+1,magz[i]);
     }
+    weight_conf = weight_conf/nsample;
+    printf("log weight of configuration (ave) = %.10e\n",weight_conf);
 
     return 0;
 }
