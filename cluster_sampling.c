@@ -261,8 +261,8 @@ int main(int argc, char** argv) {
 
     char magz_filename[128];
     char weight_filename[128];
-    sprintf(magz_filename,"magz_l_%d_beta_%.6f_t_%d.txt",L,beta,T);
-    sprintf(weight_filename,"weight_l_%d_beta_%.6f_t_%d.txt",L,beta,T);
+    sprintf(magz_filename,"magz_l_%d_beta_%.6f_t_%d.txt",L,beta,T-1);
+    sprintf(weight_filename,"weight_l_%d_beta_%.6f_t_%d.txt",L,beta,T-1);
     FILE* magz_file = fopen(magz_filename,"w");
     FILE* weight_file = fopen(weight_filename,"w");
 
