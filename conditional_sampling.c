@@ -74,8 +74,9 @@ int main(int argc, char** argv) {
     int nsite = atoi(argv[1]);
     int t = atoi(argv[2]);
     double beta = atof(argv[3]);
-    int nsample = atoi(argv[4]);
-    unsigned long int seed = atoi(argv[5]);
+    int nblock = atoi(argv[4]);
+    int nsample = atoi(argv[5]);
+    unsigned long int seed = atoi(argv[6]);
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
@@ -85,31 +86,44 @@ int main(int argc, char** argv) {
 
     set_local_prob(beta);
 
-    double weight_conf=0;
     double* magz = (double*)malloc(sizeof(double)*t);
-    for(int i=0;i<t;i++) magz[i]=0;
 
-    for(int j=0;j<nsample;j++) {
-        WeightOfConf = 0;
-        initial_state(2,nsite);
-        for(int i=0;i<t;i++) {
-            //show_state(nsite);
-            update(nsite);
-            for(int i_site=0;i_site<nsite;i_site++) {
-                magz[i]+=sigma[i_site];
+    char magz_filename[128];
+    char weight_filename[128];
+    sprintf(magz_filename,"magz_l_%d_beta_%.6f_t_%d.txt",nsite,beta,t);
+    sprintf(weight_filename,"weight_l_%d_beta_%.6f_t_%d.txt",nsite,beta,t);
+    FILE* magz_file = fopen(magz_filename,"w");
+    FILE* weight_file = fopen(weight_filename,"w");
+
+    for(int k=0;k<nblock;k++) {
+        for(int i=0;i<t;i++) magz[i]=0;
+        for(int j=0;j<nsample;j++) {
+            WeightOfConf = 0;
+            initial_state(2,nsite);
+            for(int i=0;i<t;i++) {
+                //show_state(nsite);
+                update(nsite);
+                for(int i_site=0;i_site<nsite;i_site++) {
+                    magz[i]+=sigma[i_site];
+                }
             }
+            if(j%10==0)
+                fprintf(weight_file,"%16e ",WeightOfConf);
         }
-        weight_conf += WeightOfConf;
+        fprintf(weight_file,"\n");
+
+        for(int i=0;i<t;i++) {
+            magz[i] = magz[i]/nsample/nsite;
+            magz[i] = magz[i]*2-1;
+
+            fprintf(magz_file,"%.16e ",magz[i]);
+        }
+        fprintf(magz_file,"\n");
+
     }
 
-    for(int i=0;i<t;i++) {
-        magz[i] = magz[i]/nsample/nsite;
-        magz[i] = magz[i]*2-1;
-
-        printf("t=%d %.10e\n",i+1,magz[i]);
-    }
-    weight_conf = weight_conf/nsample;
-    printf("log weight of configuration (ave) = %.10e\n",weight_conf);
+    fclose(magz_file);
+    fclose(weight_file);
 
     return 0;
 }
