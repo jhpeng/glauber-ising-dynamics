@@ -7,6 +7,7 @@ int* sigma;
 int* sigma_temp;
 
 double* local_prob;
+double IAM=0;
 gsl_rng* rng;
 
 
@@ -39,6 +40,13 @@ void initial_state(int type, int nsite) {
         for(int i=0;i<nsite;i++) {
             sigma[i] = 1;
             if(i%4==0) sigma[i] = 0;
+        }
+    } else if(type==3) {
+        for(int i=0;i<nsite;i++) {
+            sigma[i] = 0;
+            if(gsl_rng_uniform_pos(rng)<IAM) {
+                sigma[i] = 1;
+            }
         }
     }
 }
@@ -73,10 +81,12 @@ int main(int argc, char** argv) {
 
     int nsite = atoi(argv[1]);
     int t = atoi(argv[2]);
-    double beta = atof(argv[3]);
-    int nblock = atoi(argv[4]);
-    int nsample = atoi(argv[5]);
-    unsigned long int seed = atoi(argv[6]);
+    double mz = atof(argv[3]);
+    IAM = (mz+1)*0.5;
+    double beta = atof(argv[4]);
+    int nblock = atoi(argv[5]);
+    int nsample = atoi(argv[6]);
+    unsigned long int seed = atoi(argv[7]);
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
@@ -90,8 +100,8 @@ int main(int argc, char** argv) {
 
     char magz_filename[128];
     char weight_filename[128];
-    sprintf(magz_filename,"magz_l_%d_beta_%.6f_t_%d.txt",nsite,beta,t);
-    sprintf(weight_filename,"weight_l_%d_beta_%.6f_t_%d.txt",nsite,beta,t);
+    sprintf(magz_filename,"magz_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",nsite,mz,beta,t);
+    sprintf(weight_filename,"weight_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",nsite,mz,beta,t);
     FILE* magz_file = fopen(magz_filename,"w");
     FILE* weight_file = fopen(weight_filename,"w");
 
@@ -99,7 +109,7 @@ int main(int argc, char** argv) {
         for(int i=0;i<t;i++) magz[i]=0;
         for(int j=0;j<nsample;j++) {
             WeightOfConf = 0;
-            initial_state(2,nsite);
+            initial_state(3,nsite);
             for(int i=0;i<t;i++) {
                 //show_state(nsite);
                 update(nsite);
