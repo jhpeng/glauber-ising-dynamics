@@ -9,6 +9,7 @@ int* Sigma;
 int* Bond2index;
 int Nsite,Nbond;
 
+int Nfix=0;
 double IAM=0;
 double Prob[16];
 double LocalWeight[16];
@@ -120,6 +121,29 @@ void boundary_condition(int L, int T, int type) {
                 Weight[i] = -1;
             }
         }
+    } else if(type==3) {
+        // fix first n spin on up-state in the initial state and final state
+        for(int i=0;i<Nfix;i++) {
+            if(Sigma[i]==1)
+                Weight[i] = -1;
+        }
+        
+        for(int i=(T-1)*L; i<(T-1)*L+Nfix; i++) {
+            if(Sigma[i]==1)
+                Weight[i] = -1;
+        }
+    } else if(type==4) {
+        // fix first n spin on up-state in the final state
+        for(int i=0;i<L;i++) {
+            if(Sigma[i]==1 && gsl_rng_uniform_pos(rng)<IAM) {
+                Weight[i] = -1;
+            }
+        }
+
+        for(int i=(T-1)*L; i<(T-1)*L+Nfix; i++) {
+            if(Sigma[i]==1)
+                Weight[i] = -1;
+        }
     }
 }
 
@@ -229,11 +253,12 @@ int main(int argc, char** argv) {
     int T=atoi(argv[2]);
     double mz = atof(argv[3]);
     IAM = 2*mz/(1+mz);
-    double beta=atof(argv[4]);
-    int nblock  = atoi(argv[5]);
-    int nsample = atoi(argv[6]);
-    int nther   = atoi(argv[7]);
-    unsigned long int seed = atoi(argv[8]);
+    Nfix = atoi(argv[4]);
+    double beta=atof(argv[5]);
+    int nblock  = atoi(argv[6]);
+    int nsample = atoi(argv[7]);
+    int nther   = atoi(argv[8]);
+    unsigned long int seed = atoi(argv[9]);
     
     T+=1;
 
@@ -267,7 +292,7 @@ int main(int argc, char** argv) {
 
     for(int i=0;i<nther;i++) {
         initial_tree();
-        boundary_condition(L,T,2);
+        boundary_condition(L,T,4);
         clustering();
         flip();
         //analysis_cluster();
@@ -278,8 +303,10 @@ int main(int argc, char** argv) {
 
     char magz_filename[128];
     char weight_filename[128];
-    sprintf(magz_filename,"magz_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
-    sprintf(weight_filename,"weight_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
+    //sprintf(magz_filename,"magz_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
+    //sprintf(weight_filename,"weight_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
+    sprintf(magz_filename,"magz_l_%d_nfix_%d_beta_%.6f_t_%d.txt",L,Nfix,beta,T-1);
+    sprintf(weight_filename,"weight_l_%d_nfix_%d_beta_%.6f_t_%d.txt",L,Nfix,beta,T-1);
     FILE* magz_file = fopen(magz_filename,"w");
     FILE* weight_file = fopen(weight_filename,"w");
 
@@ -288,7 +315,7 @@ int main(int argc, char** argv) {
         for(int i=0;i<nsample;i++) {
             for(int j=0;j<10;j++){
                 initial_tree();
-                boundary_condition(L,T,2);
+                boundary_condition(L,T,4);
                 clustering();
                 flip();
             }
