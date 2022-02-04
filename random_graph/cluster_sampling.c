@@ -147,21 +147,42 @@ void boundary_condition(int L, int T, int type) {
     }
 }
 
-void bond2index(int L, int T) {
+int* RandomGraphConf;
+void bond2index(int L, int T, unsigned long int seed) {
     if(Bond2index==NULL) {
         Bond2index = (int*)malloc(sizeof(int)*(T-1)*L*4);
+        RandomGraphConf = (int*)malloc(sizeof(int)*L*2);
     } else {
         free(Bond2index);
+        free(RandomGraphConf);
         Bond2index = (int*)malloc(sizeof(int)*(T-1)*L*4);
+        RandomGraphConf = (int*)malloc(sizeof(int)*L*2);
     }
+
+    gsl_rng* rng_temp = gsl_rng_alloc(gsl_rng_mt19937);
+    gsl_rng_set(rng_temp,seed);
+
+    for(int x=0;x<L;x++) {
+        int x1 = (int)(gsl_rng_uniform_pos(rng_temp)*L);
+        int x2 = (int)(gsl_rng_uniform_pos(rng_temp)*L);
+
+        while(x1==x2 || x1==x || x2==x) {
+            x1 = (int)(gsl_rng_uniform_pos(rng_temp)*L);
+            x2 = (int)(gsl_rng_uniform_pos(rng_temp)*L);
+        }
+        
+        RandomGraphConf[x*2+0] = x1;
+        RandomGraphConf[x*2+1] = x2;
+    }
+    gsl_rng_free(rng_temp);
 
     int ib=0;
     for(int t=1;t<T;t++) {
         for(int x=0;x<L;x++) {
             Bond2index[4*ib+0] = x+t*L;
-            Bond2index[4*ib+1] = (x-1+L)%L + (t-1)*L;
+            Bond2index[4*ib+1] = RandomGraphConf[x*2+0] + (t-1)*L;
             Bond2index[4*ib+2] = x + (t-1)*L;
-            Bond2index[4*ib+3] = (x+1)%L + (t-1)*L;
+            Bond2index[4*ib+3] = RandomGraphConf[x*2+1] + (t-1)*L;
             ib++;
         }
     }
@@ -274,7 +295,7 @@ int main(int argc, char** argv) {
     rng = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(rng,seed);
 
-    bond2index(L,T);
+    bond2index(L,T,seed);
     initial_state(L,T,3);
 
     int b[4];
@@ -292,7 +313,7 @@ int main(int argc, char** argv) {
 
     for(int i=0;i<nther;i++) {
         initial_tree();
-        boundary_condition(L,T,4);
+        boundary_condition(L,T,3);
         clustering();
         flip();
         //analysis_cluster();
@@ -305,8 +326,8 @@ int main(int argc, char** argv) {
     char weight_filename[128];
     //sprintf(magz_filename,"magz_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
     //sprintf(weight_filename,"weight_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",L,mz,beta,T-1);
-    sprintf(magz_filename,"magz_l_%d_nfix_%d_beta_%.6f_t_%d.txt",L,Nfix,beta,T-1);
-    sprintf(weight_filename,"weight_l_%d_nfix_%d_beta_%.6f_t_%d.txt",L,Nfix,beta,T-1);
+    sprintf(magz_filename,"magz_l_%d_nfix_%d_beta_%.6f_t_%d_seed_%ld_.txt",L,Nfix,beta,T-1,seed);
+    sprintf(weight_filename,"weight_l_%d_nfix_%d_beta_%.6f_t_%d_seed_%ld_.txt",L,Nfix,beta,T-1,seed);
     FILE* magz_file = fopen(magz_filename,"w");
     FILE* weight_file = fopen(weight_filename,"w");
 
@@ -315,7 +336,7 @@ int main(int argc, char** argv) {
         for(int i=0;i<nsample;i++) {
             for(int j=0;j<10;j++){
                 initial_tree();
-                boundary_condition(L,T,4);
+                boundary_condition(L,T,3);
                 clustering();
                 flip();
             }

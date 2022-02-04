@@ -3,6 +3,8 @@
 #include <math.h>
 #include <gsl/gsl_rng.h>
 
+#define TEST_MODE
+
 int* sigma;
 int* sigma_temp;
 
@@ -69,11 +71,38 @@ int check_final_state(int nsite) {
     return check;
 }
 
+int* RandomGraphConf;
+void generate_randon_graph(int nsite, unsigned long int seed) {
+    if(RandomGraphConf==NULL) {
+        RandomGraphConf = (int*)malloc(sizeof(int)*nsite*2);
+    } else {
+        free(RandomGraphConf);
+        RandomGraphConf = (int*)malloc(sizeof(int)*nsite*2);
+    }
+
+    gsl_rng* rng_temp = gsl_rng_alloc(gsl_rng_mt19937);
+    gsl_rng_set(rng_temp,seed);
+
+    for(int x=0;x<nsite;x++) {
+        int x1 = (int)(gsl_rng_uniform_pos(rng_temp)*nsite);
+        int x2 = (int)(gsl_rng_uniform_pos(rng_temp)*nsite);
+
+        while(x1==x2 || x1==x || x2==x) {
+            x1 = (int)(gsl_rng_uniform_pos(rng_temp)*nsite);
+            x2 = (int)(gsl_rng_uniform_pos(rng_temp)*nsite);
+        }
+        
+        RandomGraphConf[x*2+0] = x1;
+        RandomGraphConf[x*2+1] = x2;
+    }
+    gsl_rng_free(rng_temp);
+}
+
 double WeightOfConf;
 void update(int nsite) {
     int s;
     for(int i=0;i<nsite;i++) {
-        s = sigma[i]+sigma[(i+1)%nsite]+sigma[(i-1+nsite)%nsite];
+        s = sigma[i]+sigma[RandomGraphConf[i*2+0]]+sigma[RandomGraphConf[i*2+1]];
         if(gsl_rng_uniform_pos(rng)<local_prob[s]) {
             sigma_temp[i]=1;
             WeightOfConf += log(local_prob[s]);
@@ -95,6 +124,10 @@ void show_state(int nsite) {
     printf("\n");
 }
 
+#ifdef TEST_MODE
+unsigned long int ITERATION_TOTAL=0;
+#endif
+
 int main(int argc, char** argv) {
 
     int nsite = atoi(argv[1]);
@@ -107,6 +140,8 @@ int main(int argc, char** argv) {
     int nblock = atoi(argv[6]);
     int nsample = atoi(argv[7]);
     unsigned long int seed = atoi(argv[8]);
+
+    generate_randon_graph(nsite,seed);
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
@@ -123,8 +158,8 @@ int main(int argc, char** argv) {
     char weight_filename[128];
     //sprintf(magz_filename,"magz_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",nsite,mz,beta,t);
     //sprintf(weight_filename,"weight_l_%d_mz_%.6f_beta_%.6f_t_%d.txt",nsite,mz,beta,t);
-    sprintf(magz_filename,"magz_l_%d_nfix_%d_beta_%.6f_t_%d.txt",nsite,Nfix,beta,t);
-    sprintf(weight_filename,"weight_l_%d_nfix_%d_beta_%.6f_t_%d.txt",nsite,Nfix,beta,t);
+    sprintf(magz_filename,"magz_l_%d_nfix_%d_beta_%.6f_t_%d_seed_%ld_.txt",nsite,Nfix,beta,t,seed);
+    sprintf(weight_filename,"weight_l_%d_nfix_%d_beta_%.6f_t_%d_seed_%ld_.txt",nsite,Nfix,beta,t,seed);
     FILE* magz_file = fopen(magz_filename,"w");
     FILE* weight_file = fopen(weight_filename,"w");
 
@@ -134,7 +169,7 @@ int main(int argc, char** argv) {
             int check=0;
             while(check==0){
                 WeightOfConf = 0;
-                initial_state(3,nsite);
+                initial_state(4,nsite);
                 for(int i=0;i<t;i++) {
                     //show_state(nsite);
                     update(nsite);
@@ -144,6 +179,10 @@ int main(int argc, char** argv) {
                     }
                 }
                 check = check_final_state(nsite);
+
+#ifdef TEST_MODE
+                ITERATION_TOTAL++;
+#endif
             }
 
             for(int i=0;i<t;i++) 
@@ -166,6 +205,10 @@ int main(int argc, char** argv) {
 
     fclose(magz_file);
     fclose(weight_file);
+
+#ifdef TEST_MODE
+    printf("total iteration : %ld\n",ITERATION_TOTAL);
+#endif
 
     return 0;
 }
