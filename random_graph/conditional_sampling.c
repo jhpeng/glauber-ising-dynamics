@@ -72,7 +72,7 @@ int check_final_state(int nsite) {
 }
 
 int* RandomGraphConf;
-void generate_randon_graph(int nsite, unsigned long int seed) {
+void generate_random_graph(int nsite, unsigned long int seed) {
     if(RandomGraphConf==NULL) {
         RandomGraphConf = (int*)malloc(sizeof(int)*nsite*2);
     } else {
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
     int nsample = atoi(argv[7]);
     unsigned long int seed = atoi(argv[8]);
 
-    generate_randon_graph(nsite,seed);
+    generate_random_graph(nsite,seed);
 
     sigma      = (int*)malloc(sizeof(int)*nsite);
     sigma_temp = (int*)malloc(sizeof(int)*nsite);
@@ -208,6 +208,8 @@ int main(int argc, char** argv) {
 
 #ifdef TEST_MODE
     printf("total iteration : %ld\n",ITERATION_TOTAL);
+    FILE* fite = fopen("total_iteration.txt","a");
+    fprintf(fite, "%d %d %lf %d %lf %d %d %ld %ld\n",nsite,t,mz,Nfix,beta,nblock,nsample,seed,ITERATION_TOTAL);
 #endif
 
     return 0;

@@ -5,6 +5,8 @@
 
 #include "union_find.h"
 
+#define TEST_MODE
+
 int* Sigma;
 int* Bond2index;
 int Nsite,Nbond;
@@ -191,6 +193,10 @@ void bond2index(int L, int T, unsigned long int seed) {
     Nsite = L*T;
 }
 
+#ifdef TEST_MODE
+unsigned long int ITERATION_ADD_GRAPH=0;
+#endif
+
 double WeightOfConf;
 void clustering() {
     int s[4];
@@ -208,14 +214,19 @@ void clustering() {
         s[3] = Sigma[index[3]];
 
         if(gsl_rng_uniform_pos(rng)<Prob[bits2int(s)]) {
-           merge(Ptree,Weight,index[0],index[1]); 
-           merge(Ptree,Weight,index[0],index[2]); 
-           merge(Ptree,Weight,index[0],index[3]); 
+            ITERATION_ADD_GRAPH++;
+            merge(Ptree,Weight,index[0],index[1]); 
+            merge(Ptree,Weight,index[0],index[2]); 
+            merge(Ptree,Weight,index[0],index[3]); 
         }
 
         WeightOfConf += log(LocalWeight[bits2int(s)]);
     }
 }
+
+#ifdef TEST_MODE
+unsigned long int ITERATION_FLIP=0;
+#endif
 
 void flip() {
     for(int i=0;i<Nsite;i++) {
@@ -228,6 +239,7 @@ void flip() {
         r = root(Ptree,i);
         if(Weight[r]>0){
             Sigma[i] = (Sigma[i])^Flist[r];
+            ITERATION_FLIP++;
         }
     }
 }
@@ -319,7 +331,7 @@ int main(int argc, char** argv) {
         //analysis_cluster();
     }
 
-    printf("staring the measurement...\n");
+    printf("starting the measurement...\n");
     double* magz = (double*)malloc(sizeof(double)*T);
 
     char magz_filename[128];
@@ -363,8 +375,12 @@ int main(int argc, char** argv) {
     fclose(magz_file);
     fclose(weight_file);
 
-    //for(int i=0;i<Nsite;i++) printf("%d %d\n",Ptree[i],Weight[i]);
-    //show_state(L,T);
+#ifdef TEST_MODE
+    printf("total iteration of adding graph  : %ld\n",ITERATION_ADD_GRAPH);
+    printf("total iteration of flipping spin : %ld\n",ITERATION_FLIP);
+    FILE* fite = fopen("total_iteration.txt","a");
+    fprintf(fite, "%d %d %lf %d %lf %d %d %ld %ld %ld\n",Nsite,T-1,mz,Nfix,beta,nblock,nsample,seed,ITERATION_ADD_GRAPH,ITERATION_FLIP);
+#endif
 
     return 0;
 }
