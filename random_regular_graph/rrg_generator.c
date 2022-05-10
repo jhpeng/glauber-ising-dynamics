@@ -1,7 +1,9 @@
-#include "stdio.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <gsl/gsl_rng.h>
+
+#include "union_find.h"
 
 // random_regular_graph_generator 
 //  This function generates random regular graph with total vetex number
@@ -83,10 +85,48 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
 
     printf("ntrail = %d\n",ntrail);
 
+    if(*graph!=NULL) {
+        free(*graph);
+    }
     *graph = graph_temp;
     *size = n*r;
 
     free(nedge);
 
     return 0;
+}
+
+int graph_analysis(int n, int r, int* graph) {
+    int* p = (int*)malloc(sizeof(int)*n);
+    int* w = (int*)malloc(sizeof(int)*n);
+
+    for(int i=0;i<n;i++) {
+        p[i]=i;
+        w[i]=1;
+    }
+
+    for(int i=0;i<n;i++) {
+        for(int j=0;j<r;j++) 
+            merge(p,w,i,graph[i*r+j]);
+    }
+
+    int count=0;
+    for(int i=0;i<n;i++) {
+        if(p[i]==i) {
+            w[count]=w[i];
+            count++;
+        }
+    }
+
+    printf("total number of isolated cluster : %d\n",count);
+    printf("size of clusters [ ");
+    for(int i=0;i<count;i++)
+        printf("%d ",w[i]);
+
+    printf("]\n");
+
+    free(p);
+    free(w);
+
+    return count;
 }
