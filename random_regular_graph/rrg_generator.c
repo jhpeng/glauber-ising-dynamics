@@ -85,9 +85,9 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
 
     printf("ntrail = %d\n",ntrail);
 
-    if(*graph!=NULL) {
-        free(*graph);
-    }
+    //if(*graph!=NULL) {
+    //    free(*graph);
+    //}
     *graph = graph_temp;
     *size = n*r;
 

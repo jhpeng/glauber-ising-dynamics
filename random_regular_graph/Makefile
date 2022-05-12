@@ -21,7 +21,7 @@ LFLAGS	= -L/usr/local/lib
 LIBS	= -lm -lgsl -lgslcblas
 
 # define the C object files
-OBJS	= union_find.o rrg_generator.o dtmc_method.o main.o
+OBJS	= union_find.o rrg_generator.o dtmc_method.o dtsw_method.o main.o
 
 
 #define the directory for object
