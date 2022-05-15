@@ -128,18 +128,24 @@ void initial_state(int n, int t_max, int type, int* state, gsl_rng* rng) {
         state[i]=0;
         if(gsl_rng_uniform_int(rng,2)) state[i]=1;
     }
+    for(int i=(n*t_max);i<nsite;i++)
+        state[i]=1;
 }
 
-void boundary_condition(int n, int t_max, int type, double p, int* state, int* w, gsl_rng* rng){
+void boundary_condition(int n, int t_max, int type, int nfix, double p, int* state, int* w, gsl_rng* rng){
     if(type==0) {
         for(int i=0;i<n;i++) {
             if(state[i]==1 && gsl_rng_uniform_pos(rng)<(2.0-1.0/p)) w[i]=-1;
+        }
+        for(int i=0;i<nfix;i++) {
+            if(state[t_max*n+i]==1) 
+                w[t_max*n+i]=-1;
         }
     }
 }
 
 // only be used in the following function
-static int dtsw_n, dtsw_r, dtsw_t_max, dtsw_type, dtsw_nsite, dtsw_nbond, dtsw_nleg;
+static int dtsw_n, dtsw_r, dtsw_t_max, dtsw_type, dtsw_nfix,dtsw_nsite, dtsw_nbond, dtsw_nleg;
 static int* dtsw_bond2index=NULL;
 static int* dtsw_ptree=NULL;
 static int* dtsw_weight=NULL;
@@ -151,12 +157,13 @@ static double dtsw_beta,dtsw_p;
 static int dtsw_count=0;
 static double* dtsw_measure_mz=NULL;
 
-void dtsw_setup(int n, int r, int t_max, int type, double beta, double p, gsl_rng* rng) {
+void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double p, gsl_rng* rng) {
     dtsw_n = n;
     dtsw_r = r;
     dtsw_nleg=r+2;
     dtsw_t_max = t_max;
     dtsw_type = type;
+    dtsw_nfix = nfix;
     dtsw_beta = beta;
     dtsw_p = p;
 
@@ -177,7 +184,7 @@ void dtsw_setup(int n, int r, int t_max, int type, double beta, double p, gsl_rn
 
 void dtsw_update(gsl_rng* rng) {
     initialization_tree(dtsw_nsite,dtsw_ptree,dtsw_weight);
-    boundary_condition(dtsw_n,dtsw_t_max,dtsw_type,dtsw_p,dtsw_state,dtsw_weight,rng);
+    boundary_condition(dtsw_n,dtsw_t_max,dtsw_type,dtsw_nfix,dtsw_p,dtsw_state,dtsw_weight,rng);
     clustering(dtsw_nbond,dtsw_nleg,dtsw_state,dtsw_ptree,dtsw_weight,dtsw_bond2index,dtsw_probs,rng);
     flipping(dtsw_nsite,dtsw_state,dtsw_ptree,dtsw_weight,dtsw_flist,rng);
 }

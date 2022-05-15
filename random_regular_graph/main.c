@@ -10,12 +10,13 @@
 int main() {
     int n=20;
     int r=3;
-    double beta=0.25;
-    double p=0.6;
+    double beta=0.15;
+    double p=0.5;
+    int nfix=4;
     int t_max=20;
-    int nsample=1000000;
+    int nsample=100000;
     int nblock=1;
-    int nthermal=100000;
+    int nthermal=nsample;
     unsigned long int seed=84893;
     int nspin=r+1;
 
@@ -39,6 +40,7 @@ int main() {
     while(1) {
         random_regular_graph_generator(n,r,2,&graph,&size,rng);
         int ncluster = graph_analysis(n,r,graph);
+        dtsw_measurement_sampling();
         if(ncluster>max_ncluster) {
             int* temp = (int*)malloc(sizeof(int)*ncluster);
             for(int i=0;i<ncluster;i++) temp[i]=0;
@@ -94,11 +96,18 @@ int main() {
             }
     
             // condition of final state
-            dtmc_measurement_converge(n,t_max);
+            if(dtmc_final_state(n,0,nfix,state,rng)) {
+                dtmc_measurement_converge(n,t_max);
+
+                printf("samples %d/%d | nblock %d/%d",dtmc_measurement_count(),(nsample/nblock),i,nblock);
+                printf("\r");
+                fflush(stdout);
+            }
         }
 
         dtmc_measurement_save(n,t_max);
     }
+    printf("samples %d/%d | nblock %d/%d\n",(nsample/nblock),(nsample/nblock),nblock,nblock);
 
 
 
@@ -107,18 +116,27 @@ int main() {
     gsl_rng* rng2 = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(rng2, seed);
 
-    dtsw_setup(n,r,t_max,0,beta,p,rng2);
+    dtsw_setup(n,r,t_max,0,nfix,beta,p,rng2);
     
     for(int i=0;i<nthermal;i++) {
         dtsw_update(rng);
+        printf("thernalization %d/%d",i,nthermal);
+        printf("\r");
+        fflush(stdout);
     }
+    printf("thernalization %d/%d\n",nthermal,nthermal);
     for(int i=0;i<nblock;i++) {
         for(int j=0;j<(nsample/nblock);j++) {
-            for(int k=0;k<10;k++) dtsw_update(rng);
+            for(int k=0;k<100;k++) dtsw_update(rng);
             dtsw_measurement_sampling();
+
+            printf("sweeps %d/%d | nblock %d/%d",j,(nsample/nblock),i,nblock);
+            printf("\r");
+            fflush(stdout);
         }
         dtsw_measurement_save();
     }
+    printf("sweeps %d/%d | nblock %d/%d\n",(nsample/nblock),(nsample/nblock),nblock,nblock);
 
 
     return 0;

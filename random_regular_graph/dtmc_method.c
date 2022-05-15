@@ -52,6 +52,18 @@ void dtmc_initial_state(int nsite, int type, double p, int* state, gsl_rng* rng)
     }
 }
 
+int dtmc_final_state(int nsite, int type, int nfix, int* state, gsl_rng* rng) {
+    int check=1;
+    if(type==0) {
+        check=1;
+        for(int j=0;j<nfix;j++) {
+            if(state[j]==0) check=0;
+        }
+    }
+
+    return check;
+}
+
 static int dtmc_count=0;
 static double* dtmc_mz_total=NULL;
 static double* dtmc_mz_hold=NULL;

@@ -9,6 +9,8 @@ void dtmc_update(int nsite, int nspin, int* graph, int* state_p, int* state_n, g
 
 void dtmc_initial_state(int nsite, int type, double p, int* state, gsl_rng* rng);
 
+int dtmc_final_state(int nsite, int type, int nfix, int* state, gsl_rng* rng);
+
 int dtmc_measurement_count();
 
 void dtmc_measurement_setup(int nsite, int t_max);
