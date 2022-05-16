@@ -169,10 +169,16 @@ static int* dtsw_flist=NULL;
 static double* dtsw_probs=NULL;
 static double dtsw_beta,dtsw_p;
 
+
+// measurement
 static int dtsw_count=0;
 static double* dtsw_measure_mz=NULL;
+static double* dtsw_measure_mz_abs=NULL;
+static double* dtsw_measure_mz_1_one=NULL;
+static double* dtsw_measure_mz_1_two=NULL;
 
 void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double p, gsl_rng* rng) {
+    // parameters
     dtsw_n = n;
     dtsw_r = r;
     dtsw_nleg=r+2;
@@ -184,6 +190,7 @@ void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double
 
     create_bond2index(dtsw_n,dtsw_r,dtsw_t_max,dtsw_beta,&dtsw_nsite,&dtsw_nbond, &dtsw_bond2index,&dtsw_probs,rng);
 
+    // placeholder
     dtsw_ptree = (int*)malloc(sizeof(int)*dtsw_nsite);
     dtsw_weight = (int*)malloc(sizeof(int)*dtsw_nsite);
     dtsw_state = (int*)malloc(sizeof(int)*dtsw_nsite);
@@ -191,9 +198,18 @@ void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double
 
     initial_state(dtsw_n,dtsw_t_max,type,dtsw_state,rng);
 
+    // measurement
     dtsw_measure_mz = (double*)malloc(sizeof(double)*(t_max+1));
+    dtsw_measure_mz_abs = (double*)malloc(sizeof(double)*(t_max+1));
+    dtsw_measure_mz_1_one = (double*)malloc(sizeof(double)*(t_max+1));
+    dtsw_measure_mz_1_two = (double*)malloc(sizeof(double)*(t_max+1)*(t_max+1));
     for(int t=0;t<(dtsw_t_max+1);t++) {
         dtsw_measure_mz[t]=0;
+        dtsw_measure_mz_abs[t]=0;
+        dtsw_measure_mz_1_one[t]=0;
+        for(int s=0;s<(dtsw_t_max+1);s++) {
+            dtsw_measure_mz_1_two[t*(dtsw_t_max+1)+s]=0;
+        }
     }
 }
 
@@ -211,9 +227,16 @@ void dtsw_measurement_sampling() {
         for(int i=0;i<dtsw_n;i++) {
             mz+=dtsw_state[t*dtsw_n+i];
         }
-        mz = fabs((mz*2-dtsw_n)/dtsw_n);
+        mz = (mz*2-dtsw_n)/dtsw_n;
 
         dtsw_measure_mz[t] += mz;
+        dtsw_measure_mz_abs[t] += fabs(mz);
+        dtsw_measure_mz_1_one[t] += dtsw_state[t*dtsw_n+0]*2-1;
+        for(int s=0;s<(dtsw_t_max+1);s++) {
+            double mz_t = dtsw_state[t*dtsw_n+0]*2-1;
+            double mz_s = dtsw_state[s*dtsw_n+0]*2-1;
+            dtsw_measure_mz_1_two[t*(dtsw_t_max+1)+s] += mz_t*mz_s;
+        }
     }
 
     dtsw_count++;
@@ -226,15 +249,34 @@ void dtsw_measurement_sampling() {
 
 void dtsw_measurement_save() {
     FILE* mz_file = fopen("dtsw_mz.txt","a");
+    FILE* mz_abs_file = fopen("dtsw_mz_abs.txt","a");
+    FILE* mz_1_one_file = fopen("dtsw_mz_1_one.txt","a");
+    FILE* mz_1_two_file = fopen("dtsw_mz_1_two.txt","a");
 
     for(int t=0;t<(dtsw_t_max+1);t++) {
         fprintf(mz_file,"%.16e ", dtsw_measure_mz[t]/dtsw_count);
+        fprintf(mz_abs_file,"%.16e ", dtsw_measure_mz_abs[t]/dtsw_count);
+        fprintf(mz_1_one_file,"%.16e ", dtsw_measure_mz_1_one[t]/dtsw_count);
 
         dtsw_measure_mz[t]=0;
+        dtsw_measure_mz_abs[t]=0;
+        dtsw_measure_mz_1_one[t]=0;
+
+        for(int s=0;s<(dtsw_t_max+1);s++) {
+            fprintf(mz_1_two_file,"%.16e ", dtsw_measure_mz_1_two[t*(dtsw_t_max+1)+s]/dtsw_count);
+
+            dtsw_measure_mz_1_two[t*(dtsw_t_max+1)+s]=0;
+        }
     }
     fprintf(mz_file,"\n");
+    fprintf(mz_abs_file,"\n");
+    fprintf(mz_1_one_file,"\n");
+    fprintf(mz_1_two_file,"\n");
 
     fclose(mz_file);
+    fclose(mz_abs_file);
+    fclose(mz_1_one_file);
+    fclose(mz_1_two_file);
 
     dtsw_count=0;
 }
