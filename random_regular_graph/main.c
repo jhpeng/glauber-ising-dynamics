@@ -7,17 +7,17 @@
 #include "dtmc_method.h"
 #include "dtsw_method.h"
 
-int main() {
-    int n=32;
-    int r=3;
-    double beta=0.25;
-    double p=0.5;
-    int nfix=0;
-    int t_max=1000;
-    int nsample=100000;
-    int nblock=1;
+int main(int argc, char** argv) {
+    int n=atoi(argv[1]);
+    int r=atoi(argv[2]);
+    double beta=atof(argv[3]);
+    double p=atof(argv[4]);
+    int nfix=atoi(argv[5]);
+    int t_max=atoi(argv[6]);
+    int nsample=atoi(argv[7]);
+    int nblock=atoi(argv[8]);
     int nthermal=nsample;
-    unsigned long int seed=84893;
+    unsigned long int seed=atoi(argv[9]);
     int nspin=r+1;
 
     gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937);
