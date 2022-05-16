@@ -144,6 +144,21 @@ void boundary_condition(int n, int t_max, int type, int nfix, double p, int* sta
     }
 }
 
+void dtsw_cluster_analysis(int n, int t_max, int* p, int* w) {
+    int ncluster=0;
+    printf("cluster analysis\n");
+    printf("cluster size : [");
+    for(int i=0;i<(t_max+1)*n;i++) {
+        if(i==p[i]) {
+            ncluster++;
+            printf("%d ",w[i]);
+        }
+    }
+    printf("]\n");
+    printf("ncluster = %d\n",ncluster);
+    printf("------------------------------\n");
+}
+
 // only be used in the following function
 static int dtsw_n, dtsw_r, dtsw_t_max, dtsw_type, dtsw_nfix,dtsw_nsite, dtsw_nbond, dtsw_nleg;
 static int* dtsw_bond2index=NULL;
@@ -196,12 +211,17 @@ void dtsw_measurement_sampling() {
         for(int i=0;i<dtsw_n;i++) {
             mz+=dtsw_state[t*dtsw_n+i];
         }
-        mz = (mz*2-dtsw_n)/dtsw_n;
+        mz = fabs((mz*2-dtsw_n)/dtsw_n);
 
         dtsw_measure_mz[t] += mz;
     }
 
     dtsw_count++;
+
+    if(dtsw_count%1000==0) {
+        printf("dtsw_count : %d \n",dtsw_count);
+        dtsw_cluster_analysis(dtsw_n,dtsw_t_max,dtsw_ptree,dtsw_weight);
+    }
 }
 
 void dtsw_measurement_save() {

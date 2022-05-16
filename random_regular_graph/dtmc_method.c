@@ -94,7 +94,7 @@ void dtmc_measurement_sampling(int nsite, int t_max, int t, int* state) {
         dtmc_mz_hold[t] += state[i];
     }
 
-    dtmc_mz_hold[t] = 2*dtmc_mz_hold[t]/nsite-1;
+    dtmc_mz_hold[t] = fabs(2*dtmc_mz_hold[t]/nsite-1);
 }
 
 void dtmc_measurement_converge(int nsite, int t_max) {
