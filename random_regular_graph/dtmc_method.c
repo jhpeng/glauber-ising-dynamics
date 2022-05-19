@@ -93,7 +93,7 @@ void dtmc_measurement_setup(int nsite, int t_max) {
 
     for(int t=0;t<(t_max+1);t++) {
         dtmc_mz_total[t]=0;
-        dtmc_mz_total[t]=0;
+        dtmc_mz_abs_total[t]=0;
         dtmc_mz_hold[t]=0;
         dtmc_mz_1_hold[t]=0;
         dtmc_mz_1_one_total[t]=0;
