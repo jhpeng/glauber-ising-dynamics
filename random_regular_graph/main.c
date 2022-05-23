@@ -18,8 +18,10 @@ int main(int argc, char** argv) {
     int nblock=atoi(argv[8]);
     int nthermal=nsample;
     unsigned long int seed=atoi(argv[9]);
+    int mode=atoi(argv[10]);
     int nspin=r+1;
 
+    if(mode==0 || mode==1) {
     gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(rng, seed);
 
@@ -85,8 +87,9 @@ int main(int argc, char** argv) {
     }
     printf("samples %d/%d | nblock %d/%d\n",(nsample/nblock),(nsample/nblock),nblock,nblock);
 
-
-
+    }
+    
+    if(mode==0 || mode==2) {
     // dtsw_method
     printf("===================================\n");
     printf("starting dtsw method...\n");
@@ -98,7 +101,7 @@ int main(int argc, char** argv) {
     
     printf("thermalization...\n");
     for(int i=0;i<nthermal;i++) {
-        dtsw_update(rng);
+        dtsw_update(rng2);
         printf("thernalization %d/%d",i,nthermal);
         printf("\r");
         fflush(stdout);
@@ -108,12 +111,13 @@ int main(int argc, char** argv) {
     printf("starting the estimator...\n");
     for(int i=0;i<nblock;i++) {
         for(int j=0;j<(nsample/nblock);j++) {
-            for(int k=0;k<10;k++) dtsw_update(rng);
+            for(int k=0;k<10;k++) dtsw_update(rng2);
             dtsw_measurement_sampling();
         }
         dtsw_measurement_save();
     }
 
+    }
 
     return 0;
 }
