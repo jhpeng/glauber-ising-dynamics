@@ -49,6 +49,18 @@ void dtmc_initial_state(int nsite, int type, double p, int* state, gsl_rng* rng)
                 state[i]=0;
             }
         }
+    } else if(type==1) {
+        int total_m=1;
+        while(total_m<2) {
+            total_m=0;
+            for(int i=0;i<nsite;i++) {
+                state[i]=0;
+                if(gsl_rng_uniform_pos(rng)<p) 
+                    state[i]=1;
+
+                total_m += state[i]*2-1;
+            }
+        }
     }
 }
 

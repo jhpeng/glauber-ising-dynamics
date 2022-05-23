@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
         while(dtmc_measurement_count()<(nsample/nblock)) {
 
-            dtmc_initial_state(n,0,p,state,rng);
+            dtmc_initial_state(n,1,p,state,rng);
             dtmc_measurement_sampling(n,t_max,0,state);
 
             for(int t=0;t<t_max;t++) {
