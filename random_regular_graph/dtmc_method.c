@@ -50,8 +50,8 @@ void dtmc_initial_state(int nsite, int type, double p, int* state, gsl_rng* rng)
             }
         }
     } else if(type==1) {
-        int total_m=1;
-        while(total_m<2) {
+        int total_m=2;
+        while(total_m>1 || total_m<-1) {
             total_m=0;
             for(int i=0;i<nsite;i++) {
                 state[i]=0;
