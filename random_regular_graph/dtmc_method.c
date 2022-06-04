@@ -77,7 +77,7 @@ int dtmc_final_state(int nsite, int type, int nfix, int* state, gsl_rng* rng) {
     } else if(type==2) {
         check=1;
         for(int j=0;j<nsite;j++) {
-            if(state[j]==1) check=0;
+            if(state[j]==0) check=0;
         }
     }
 
