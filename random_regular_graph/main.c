@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
 
     // setup for dtmc 
     int type=2;
+    int ntrial=0;
     int* state = (int*)malloc(sizeof(int)*n);
     int* state_temp = (int*)malloc(sizeof(int)*n);
     int* temp;
@@ -82,11 +83,26 @@ int main(int argc, char** argv) {
                 printf("\r");
                 fflush(stdout);
             }
+            ntrial++;
         }
 
         dtmc_measurement_save(n,t_max);
     }
     printf("samples %d/%d | nblock %d/%d\n",(nsample/nblock),(nsample/nblock),nblock,nblock);
+
+    // save information about dtmc
+    FILE* dtmc_file=fopen("dtmc_info.txt","w");
+
+    fprintf(dtmc_file,"#dtmc_info.txt");
+    fprintf(dtmc_file,"n      : %d\n",n);
+    fprintf(dtmc_file,"r      : %d\n",r);
+    fprintf(dtmc_file,"beta   : %.6f\n",p);
+    fprintf(dtmc_file,"p      : %.6f\n",p);
+    fprintf(dtmc_file,"nfix   : %d\n",nfix);
+    fprintf(dtmc_file,"t_max  : %d\n",t_max);
+    fprintf(dtmc_file,"nsample: %d\n",nsample);
+    fprintf(dtmc_file,"ntrial : %d\n",ntrial);
+    fclose(dtmc_file);
 
     }
     
