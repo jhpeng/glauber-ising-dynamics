@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
 
 
     // setup for dtmc 
+    int type=2;
     int* state = (int*)malloc(sizeof(int)*n);
     int* state_temp = (int*)malloc(sizeof(int)*n);
     int* temp;
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
 
         while(dtmc_measurement_count()<(nsample/nblock)) {
 
-            dtmc_initial_state(n,1,p,state,rng);
+            dtmc_initial_state(n,type,p,state,rng);
             dtmc_measurement_sampling(n,t_max,0,state);
 
             for(int t=0;t<t_max;t++) {
@@ -74,7 +75,7 @@ int main(int argc, char** argv) {
             }
     
             // condition of final state
-            if(dtmc_final_state(n,0,nfix,state,rng)) {
+            if(dtmc_final_state(n,type,nfix,state,rng)) {
                 dtmc_measurement_converge(n,t_max);
 
                 printf("samples %d/%d | nblock %d/%d",dtmc_measurement_count(),(nsample/nblock),i,nblock);
@@ -91,13 +92,16 @@ int main(int argc, char** argv) {
     
     if(mode==0 || mode==2) {
     // dtsw_method
+    // type=0 : fixed nfix final sites
+    // type=1 : fixed all initial and final sites
+    int type=1;
     printf("===================================\n");
     printf("starting dtsw method...\n");
     gsl_rng* rng2 = gsl_rng_alloc(gsl_rng_mt19937);
     gsl_rng_set(rng2, seed);
 
     printf("allocating memory...\n");
-    dtsw_setup(n,r,t_max,0,nfix,beta,p,rng2);
+    dtsw_setup(n,r,t_max,type,nfix,beta,p,rng2);
     
     printf("thermalization...\n");
     for(int i=0;i<nthermal;i++) {

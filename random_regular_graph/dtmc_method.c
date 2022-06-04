@@ -61,15 +61,23 @@ void dtmc_initial_state(int nsite, int type, double p, int* state, gsl_rng* rng)
                 total_m += state[i]*2-1;
             }
         }
+    } else if(type==2) {
+        for(int i=0;i<nsite;i++) 
+            state[i]=0;
     }
 }
 
 int dtmc_final_state(int nsite, int type, int nfix, int* state, gsl_rng* rng) {
     int check=1;
-    if(type==0) {
+    if(type==0 || type==1) {
         check=1;
         for(int j=0;j<nfix;j++) {
             if(state[j]==0) check=0;
+        }
+    } else if(type==2) {
+        check=1;
+        for(int j=0;j<nsite;j++) {
+            if(state[j]==1) check=0;
         }
     }
 

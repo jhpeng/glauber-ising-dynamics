@@ -130,6 +130,11 @@ void initial_state(int n, int t_max, int type, int* state, gsl_rng* rng) {
     }
     for(int i=(n*t_max);i<nsite;i++)
         state[i]=1;
+
+    if(type==1) {
+        for(int i=0;i<n;i++)
+            state[i]=0;
+    }
 }
 
 void boundary_condition(int n, int t_max, int type, int nfix, double p, int* state, int* w, gsl_rng* rng){
@@ -138,6 +143,14 @@ void boundary_condition(int n, int t_max, int type, int nfix, double p, int* sta
             if(state[i]==1 && gsl_rng_uniform_pos(rng)<(2.0-1.0/p)) w[i]=-1;
         }
         for(int i=0;i<nfix;i++) {
+            if(state[t_max*n+i]==1) 
+                w[t_max*n+i]=-1;
+        }
+    } else if(type==1) {
+        for(int i=0;i<n;i++) {
+            if(state[i]==0) w[i]=-1;
+        }
+        for(int i=0;i<n;i++) {
             if(state[t_max*n+i]==1) 
                 w[t_max*n+i]=-1;
         }
