@@ -22,19 +22,19 @@
 //   size (int*) output of the size of the graph
 //   rng (gsl_rng) random number generator
 
-int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, gsl_rng* rng) {
+int random_regular_graph_generator(int n, int r, int m, int* graph, gsl_rng* rng) {
     if(((r*n)%2)!=0) {
         printf("r*n should be an even number!\n");
         return 1;
     }
 
-    int* graph_temp = (int*)malloc(sizeof(int)*r*n);
     int* nedge = (int*)malloc(sizeof(int)*n);
 
     int check_global=1;
     int ntrail=0;
     while(check_global) {
         for(int i=0;i<n;i++) nedge[i]=0;
+        printf("rrg_generator.c 38\n");
         for(int i1=0;i1<n;i1++){
             for(int j1=nedge[i1];j1<r;){
                 nedge[i1]++;
@@ -47,8 +47,8 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
                         int j2=nedge[i2];
                         nedge[i2]++;
 
-                        graph_temp[i1*r+j1] = i2;
-                        graph_temp[i2*r+j2] = i1;
+                        graph[i1*r+j1] = i2;
+                        graph[i2*r+j2] = i1;
                         check_local=0;
                     }
                 }
@@ -60,7 +60,7 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
         if(m==1 || m==2){
             for(int i=0;i<n;i++) {
                 for(int j=0;j<r;j++) {
-                    if(graph_temp[i*r+j]==i) 
+                    if(graph[i*r+j]==i) 
                         check_global=1;
                 }
             }
@@ -70,7 +70,7 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
             for(int i=0;i<n;i++) {
                 for(int j1=0;j1<r;j1++){
                     for(int j2=j1+1;j2<r;j2++) {
-                        if(graph_temp[i*r+j1]==graph_temp[i*r+j2])
+                        if(graph[i*r+j1]==graph[i*r+j2])
                             check_global=1;
                     }
                 }
@@ -78,18 +78,12 @@ int random_regular_graph_generator(int n, int r, int m, int** graph, int *size, 
         }
         ntrail++;
 
-        printf("ntrail = %d",ntrail);
-        printf("\r");
-        fflush(stdout);
+        //printf("ntrail = %d",ntrail);
+        //printf("\r");
+        //fflush(stdout);
     }
 
     printf("ntrail = %d\n",ntrail);
-
-    //if(*graph!=NULL) {
-    //    free(*graph);
-    //}
-    *graph = graph_temp;
-    *size = n*r;
 
     free(nedge);
 

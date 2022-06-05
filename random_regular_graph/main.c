@@ -26,14 +26,13 @@ int main(int argc, char** argv) {
     gsl_rng_set(rng, seed);
 
     // generate random regular graph
-    int* graph=NULL;
-    int size;
+    int* graph=(int*)malloc(sizeof(int)*n*r);
 
-    if(random_regular_graph_generator(n,r,2,&graph,&size,rng))
+    if(random_regular_graph_generator(n,r,2,graph,rng))
         return 1;
 
     while(graph_analysis(n,r,graph)!=1) {
-        random_regular_graph_generator(n,r,2,&graph,&size,rng);
+        random_regular_graph_generator(n,r,2,graph,rng);
     }
 
     for(int i=0;i<n;i++) {

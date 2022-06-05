@@ -88,38 +88,34 @@ void flipping(int nsite, int* state, int* p, int* w, int* flist, gsl_rng* rng) {
     }
 }
 
-void create_bond2index(int n, int r, int t_max, double beta, int* nsite, int* nbond, int** bond2index, double** probs, gsl_rng* rng) {
+void create_bond2index(int n, int r, int t_max, double beta, int* nsite, int* nbond, int* bond2index, double* probs, gsl_rng* rng) {
     int nleg=r+2;
-    int* bond2index_temp = (int*)malloc(sizeof(int)*nleg*n*t_max);
-    double* probs_temp = (double*)malloc(sizeof(double)*nleg);
-    int* graph=NULL;
-    int size;
+    int* graph=(int*)malloc(sizeof(int)*n*r);
 
-    random_regular_graph_generator(n,r,2,&graph,&size,rng);
+    printf("dtsw_method.c 98\n");
+    random_regular_graph_generator(n,r,2,graph,rng);
     while(graph_analysis(n,r,graph)!=1) {
-        random_regular_graph_generator(n,r,2,&graph,&size,rng);
+        random_regular_graph_generator(n,r,2,graph,rng);
     }
 
     int ib=0;
     for(int t=1;t<(t_max+1);t++) {
         for(int i=0;i<n;i++) {
-            bond2index_temp[nleg*ib+0] = i+t*n;
-            bond2index_temp[nleg*ib+1] = i+(t-1)*n;
+            bond2index[nleg*ib+0] = i+t*n;
+            bond2index[nleg*ib+1] = i+(t-1)*n;
             for(int j=0;j<r;j++)
-                bond2index_temp[nleg*ib+j+2] = graph[i*r+j]+(t-1)*n;
+                bond2index[nleg*ib+j+2] = graph[i*r+j]+(t-1)*n;
 
             ib++;
         }
     }
 
-    *bond2index = bond2index_temp;
     *nbond = ib;
     *nsite = n*(t_max+1);
 
-    probability_adding_graph(nleg,beta,probs_temp);
-    *probs = probs_temp;
+    probability_adding_graph(nleg,beta,probs);
 
-    //free(graph);
+    free(graph);
 }
 
 void initial_state(int n, int t_max, int type, int* state, gsl_rng* rng) {
@@ -201,7 +197,10 @@ void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double
     dtsw_beta = beta;
     dtsw_p = p;
 
-    create_bond2index(dtsw_n,dtsw_r,dtsw_t_max,dtsw_beta,&dtsw_nsite,&dtsw_nbond, &dtsw_bond2index,&dtsw_probs,rng);
+    int nleg=r+2;
+    dtsw_bond2index = (int*)malloc(sizeof(int)*nleg*n*t_max);
+    dtsw_probs = (double*)malloc(sizeof(double)*nleg);
+    create_bond2index(dtsw_n,dtsw_r,dtsw_t_max,dtsw_beta,&dtsw_nsite,&dtsw_nbond,dtsw_bond2index,dtsw_probs,rng);
 
     // placeholder
     dtsw_ptree = (int*)malloc(sizeof(int)*dtsw_nsite);
