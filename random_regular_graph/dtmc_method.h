@@ -21,4 +21,6 @@ void dtmc_measurement_converge(int nsite, int t_max);
 
 void dtmc_measurement_save(int nsite, int t_max);
 
+void dtmc_free();
+
 #endif

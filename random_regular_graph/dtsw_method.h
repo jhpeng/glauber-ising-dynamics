@@ -11,4 +11,6 @@ void dtsw_measurement_sampling();
 
 void dtsw_measurement_save();
 
+void dtsw_free();
+
 #endif

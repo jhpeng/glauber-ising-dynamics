@@ -103,7 +103,11 @@ int main(int argc, char** argv) {
     fprintf(dtmc_file,"ntrial : %d\n",ntrial);
     fclose(dtmc_file);
 
+    dtmc_free();
+    free(state);
+    free(state_temp);
     free(graph);
+    gsl_rng_free(rng);
     }
     
     if(mode==0 || mode==2) {
@@ -137,6 +141,8 @@ int main(int argc, char** argv) {
         dtsw_measurement_save();
     }
 
+    dtsw_free();
+    gsl_rng_free(rng2);
     }
 
     return 0;

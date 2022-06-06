@@ -178,3 +178,22 @@ void dtmc_measurement_save(int nsite, int t_max) {
     fclose(mz_1_one_file);
     fclose(mz_1_two_file);
 }
+
+void dtmc_free() {
+    if(dtmc_mz_total!=NULL) free(dtmc_mz_total);
+    if(dtmc_mz_abs_total!=NULL) free(dtmc_mz_abs_total);
+    if(dtmc_mz_1_one_total!=NULL) free(dtmc_mz_1_one_total);
+    if(dtmc_mz_1_two_total!=NULL) free(dtmc_mz_1_two_total);
+    if(dtmc_mz_hold!=NULL) free(dtmc_mz_hold);
+    if(dtmc_mz_1_hold!=NULL) free(dtmc_mz_1_hold);
+    if(trans_probs!=NULL) free(trans_probs);
+
+    dtmc_mz_total=NULL;
+    dtmc_mz_abs_total=NULL;
+    dtmc_mz_1_one_total=NULL;
+    dtmc_mz_1_two_total=NULL;
+    dtmc_mz_hold=NULL;
+    dtmc_mz_1_hold=NULL;
+    trans_probs=NULL;
+}
+

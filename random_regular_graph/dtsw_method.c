@@ -114,7 +114,7 @@ void create_bond2index(int n, int r, int t_max, double beta, int* nsite, int* nb
 
     probability_adding_graph(nleg,beta,probs);
 
-    //free(graph);
+    free(graph);
 }
 
 void initial_state(int n, int t_max, int type, int* state, gsl_rng* rng) {
@@ -197,7 +197,7 @@ void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double
     dtsw_p = p;
 
     dtsw_bond2index = (int*)malloc(sizeof(int)*dtsw_nleg*n*t_max);
-    dtsw_probs = (double*)malloc(sizeof(double)*dtsw_nleg);
+    dtsw_probs = (double*)malloc(sizeof(double)*(1<<dtsw_nleg));
     create_bond2index(dtsw_n,dtsw_r,dtsw_t_max,dtsw_beta,&dtsw_nsite,&dtsw_nbond,dtsw_bond2index,dtsw_probs,rng);
 
     // placeholder
@@ -289,4 +289,17 @@ void dtsw_measurement_save() {
     fclose(mz_1_two_file);
 
     dtsw_count=0;
+}
+
+void dtsw_free() {
+    free(dtsw_bond2index);
+    free(dtsw_probs);
+    free(dtsw_ptree);
+    free(dtsw_weight);
+    free(dtsw_state);
+    free(dtsw_flist);
+    free(dtsw_measure_mz);
+    free(dtsw_measure_mz_abs);
+    free(dtsw_measure_mz_1_one);
+    free(dtsw_measure_mz_1_two);
 }
