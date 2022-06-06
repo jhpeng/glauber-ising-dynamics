@@ -92,7 +92,6 @@ void create_bond2index(int n, int r, int t_max, double beta, int* nsite, int* nb
     int nleg=r+2;
     int* graph=(int*)malloc(sizeof(int)*n*r);
 
-    printf("dtsw_method.c 98\n");
     random_regular_graph_generator(n,r,2,graph,rng);
     while(graph_analysis(n,r,graph)!=1) {
         random_regular_graph_generator(n,r,2,graph,rng);
@@ -115,7 +114,7 @@ void create_bond2index(int n, int r, int t_max, double beta, int* nsite, int* nb
 
     probability_adding_graph(nleg,beta,probs);
 
-    free(graph);
+    //free(graph);
 }
 
 void initial_state(int n, int t_max, int type, int* state, gsl_rng* rng) {
@@ -197,9 +196,8 @@ void dtsw_setup(int n, int r, int t_max, int type, int nfix, double beta, double
     dtsw_beta = beta;
     dtsw_p = p;
 
-    int nleg=r+2;
-    dtsw_bond2index = (int*)malloc(sizeof(int)*nleg*n*t_max);
-    dtsw_probs = (double*)malloc(sizeof(double)*nleg);
+    dtsw_bond2index = (int*)malloc(sizeof(int)*dtsw_nleg*n*t_max);
+    dtsw_probs = (double*)malloc(sizeof(double)*dtsw_nleg);
     create_bond2index(dtsw_n,dtsw_r,dtsw_t_max,dtsw_beta,&dtsw_nsite,&dtsw_nbond,dtsw_bond2index,dtsw_probs,rng);
 
     // placeholder

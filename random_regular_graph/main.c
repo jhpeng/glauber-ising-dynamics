@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
     fprintf(dtmc_file,"ntrial : %d\n",ntrial);
     fclose(dtmc_file);
 
+    free(graph);
     }
     
     if(mode==0 || mode==2) {

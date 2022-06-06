@@ -34,7 +34,6 @@ int random_regular_graph_generator(int n, int r, int m, int* graph, gsl_rng* rng
     int ntrail=0;
     while(check_global) {
         for(int i=0;i<n;i++) nedge[i]=0;
-        printf("rrg_generator.c 38\n");
         for(int i1=0;i1<n;i1++){
             for(int j1=nedge[i1];j1<r;){
                 nedge[i1]++;
