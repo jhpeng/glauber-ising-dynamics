@@ -72,13 +72,17 @@ void stat_print_status() {
     printf("             |     var    |  var_bin   |    tau\n");
     for(int i_data=0;i_data<stat_ndata;i_data++) {
         for(int i_bin=0;i_bin<nbin;i_bin++) {
-            p = &((stat_data[i_data])[i_bin*stat_bsize]);
-            (stat_data_bin[i_data])[i_bin] = stat_ave(p,stat_bsize);
+            //p = &((stat_data[i_data])[i_bin*stat_bsize]);
+            //(stat_data_bin[i_data])[i_bin] = stat_ave(p,stat_bsize);
+            (stat_data_bin[i_data])[i_bin] = 0;
+            for(int i=0;i<stat_bsize;i++)
+                (stat_data_bin[i_data])[i_bin] += (stat_data[i_data])[i_bin*stat_bsize+i];
+            (stat_data_bin[i_data])[i_bin] = (stat_data_bin[i_data])[i_bin]/stat_bsize;
         }
 
         var[i_data] = stat_var(stat_data[i_data],stat_len);
         var_bin[i_data] = stat_var(stat_data_bin[i_data],nbin);
-        tau[i_data] = var_bin[i_data]*stat_bsize/var[i_data];
+        tau[i_data] = var_bin[i_data]*stat_bsize/var[i_data]-1;
 
         printf("data id (%d) : %.6e %.6e %.6e\n",i_data,var[i_data],var_bin[i_data],tau[i_data]);
     }

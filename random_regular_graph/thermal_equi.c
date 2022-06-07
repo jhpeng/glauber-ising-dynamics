@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     }
 
     // measurement
-    stat_setup(5,100);
+    stat_setup(5,500);
     double sdata[5];
 
     FILE* m_file = fopen("data.txt","a");
