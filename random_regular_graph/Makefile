@@ -6,7 +6,7 @@ CC	= gcc
 
 # define any compile-time flags
 #CFLAGS = -Wall -g -fPIC -O0 -std=c99
-CFLAGS = -Wall -fPIC -std=c99
+CFLAGS = -Wall -fPIC -O3 -std=c99
 
 # define openmp flags
 OPENMP  = -fopenmp
@@ -22,8 +22,8 @@ LFLAGS	= -L/usr/local/lib
 LIBS	= -lm -lgsl -lgslcblas
 
 # define the C object files
-OBJS	= union_find.o rrg_generator.o dtmc_method.o dtsw_method.o main.o
-OBJS2	= union_find.o rrg_generator.o dtmc_method.o thermal_equi.o
+OBJS	= union_find.o rrg_generator.o dtmc_method.o dtsw_method.o stat.o main.o
+OBJS2	= union_find.o rrg_generator.o dtmc_method.o stat.o thermal_equi.o
 
 
 #define the directory for object

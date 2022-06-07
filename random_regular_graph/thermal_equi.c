@@ -2,11 +2,13 @@
 #include "stdlib.h"
 #include "math.h"
 #include "gsl/gsl_rng.h"
+#include "gsl/gsl_randist.h"
 
 #include "rrg_generator.h"
 #include "dtmc_method.h"
+#include "stat.h"
 
-static int nskip=10;
+static int nskip=1;
 
 int main(int argc, char** argv) {
     int n=atoi(argv[1]);
@@ -49,6 +51,9 @@ int main(int argc, char** argv) {
     }
 
     // measurement
+    stat_setup(5,100);
+    double sdata[5];
+
     FILE* m_file = fopen("data.txt","a");
     int bsize = nsample/nblock;
     int Mz;
@@ -76,6 +81,13 @@ int main(int argc, char** argv) {
             mz1 += fabs(mz);
             mz2 += mz*mz;
             mz4 += mz*mz*mz*mz;
+
+            sdata[0] = mz;
+            sdata[1] = fabs(mz);
+            sdata[2] = mz*mz;
+            sdata[3] = mz*mz*mz*mz;
+            sdata[4] = gsl_ran_gaussian(rng,2.0);
+            stat_append(sdata);
         }
 
         mz1 = mz1/bsize;
@@ -83,7 +95,9 @@ int main(int argc, char** argv) {
         mz4 = mz4/bsize;
 
         fprintf(m_file,"%.12e %.12e %.12e \n",mz1,mz2,mz4);
+        stat_print_status();
     }
 
     fclose(m_file);
+    stat_free();
 }
